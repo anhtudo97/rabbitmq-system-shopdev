@@ -4,7 +4,7 @@ const amqp = require('amqplib')
 
 const connectToRabbitMQ = async () => {
     try {
-        const connection = await amqp.connect('amqp://guest:12345@localhost')
+        const connection = await amqp.connect('amqp://localhost')
         if (!connection) {
             throw new Error('Connection not established')
         }
@@ -35,7 +35,25 @@ const connectToRabbitMQTest = async () => {
     }
 }
 
+const consumerQueue = async (channel, queueName) => {
+    try {
+        await channel.assertQueue(queueName, { durable: true })
+        console.log(`Waiting for messages ...`)
+        channel.consume(queueName, msg => {
+            console.log(`Received messages:  ${queueName}::`, msg.content.toString())
+            // 1. find User following that shop
+            // 2. send message to user
+            // 3. ok =>> successful
+            // 4. error =>> setup DLX 
+        })
+    } catch (error) {
+        console.error('Error publish message to rabbitMQ::', error)
+        throw new Error(`Error publish message to rabbitMQ:: ${error}`)
+    }
+}
+
 module.exports = {
     connectToRabbitMQ,
-    connectToRabbitMQTest
+    connectToRabbitMQTest,
+    consumerQueue
 }
